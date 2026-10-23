@@ -43,6 +43,19 @@ Akun demo setelah seed: `demo@kolabkuis.id` / `demo12345` (pemilik kelas). Akun 
 
    Klik *Deploy*. Setelah selesai, link `https://kolabkuis-xxx.vercel.app` itulah link prototype.
 
+## Pengujian end-to-end
+
+`tests/e2e.py` menjalankan 38 skenario dengan Playwright di desktop dan ponsel (390 px): registrasi, gabung kelas, vote, laporan, tulis/ubah/hapus soal, kuis sampai hasil, hak akses pemilik dan anggota, kerahasiaan kunci jawaban, dan papan peringkat.
+
+Jalankan hanya terhadap database lokal, karena tes menambah dan menghapus data:
+
+```bash
+npm run db:push && npm run db:seed
+npm run build && npm start            # terminal 1
+pip install playwright && python -m playwright install chromium
+python tests/e2e.py                   # terminal 2
+```
+
 ## Struktur proyek
 
 ```
@@ -63,6 +76,8 @@ middleware.ts        proteksi rute yang butuh login
 ## Aturan penting
 
 - Soal disembunyikan otomatis dari kuis bila skor vote ≤ −3 atau ada ≥ 3 laporan terbuka.
-- Poin peringkat: 10 per jawaban benar, 5 per soal ditulis, 2 per suara naik dari anggota lain.
+- Poin peringkat: 10 per jawaban benar, 5 per soal aktif yang ditulis (soal yang disembunyikan tidak dihitung), 2 per suara naik dari anggota lain.
 - Kunci jawaban tidak pernah dikirim ke browser selama kuis; setiap jawaban diperiksa di server dan satu soal hanya bisa dijawab sekali per sesi.
+- Di halaman bank soal, kunci dan pembahasan hanya dirender untuk penulis soal, pemilik kelas, atau anggota yang sudah mengerjakan soal itu di kuis.
+- Penulis tidak bisa memberi vote pada soalnya sendiri (dicek di server).
 - Halaman kelas hanya bisa dibuka anggotanya (selain anggota mendapat 404).

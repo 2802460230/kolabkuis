@@ -35,6 +35,8 @@ export async function getQuestionsForSet(setId: string, userId: string) {
       openReports: openReportsSql,
       myVote: sql<number | null>`(select ${votes.value} from ${votes} where ${votes.questionId} = ${questions.id} and ${votes.userId} = ${userId})`,
       myReport: sql<boolean>`exists(select 1 from ${reports} where ${reports.questionId} = ${questions.id} and ${reports.userId} = ${userId} and ${reports.resolved} = false)`,
+      // Sudah pernah dijawab user ini di kuis? Kunci jawaban baru boleh dilihat setelah itu.
+      answeredByMe: sql<boolean>`exists(select 1 from attempt_answers aa join attempts a on a.id = aa.attempt_id where aa.question_id = ${questions.id} and a.user_id = ${userId})`,
     })
     .from(questions)
     .innerJoin(users, eq(users.id, questions.authorId))
@@ -85,6 +87,9 @@ export async function getLeaderboard(classroomId: string): Promise<LeaderRow[]> 
       select q.author_id as user_id, count(*)::int as n
       from questions q join question_sets s on s.id = q.set_id
       where s.classroom_id = ${classroomId}
+        -- hanya soal aktif: soal yang disembunyikan (dinilai buruk) tidak memberi poin
+        and coalesce((select sum(v.value) from votes v where v.question_id = q.id), 0) > ${HIDE_SCORE}
+        and (select count(*) from reports r where r.question_id = q.id and not r.resolved) < ${HIDE_REPORTS}
       group by q.author_id
     ),
     ups as (

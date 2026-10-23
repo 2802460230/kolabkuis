@@ -65,8 +65,10 @@ export async function deleteQuestion(questionId: string) {
 
 // Vote: klik tombol yang sama dua kali = batalkan vote
 export async function voteQuestion(questionId: string, value: 1 | -1) {
-  const { user, path } = await loadQuestion(questionId);
+  const { q, user, path } = await loadQuestion(questionId);
   if (value !== 1 && value !== -1) return;
+  // Penulis tidak boleh menilai soalnya sendiri (dicek di server, bukan hanya tombol yang dinonaktifkan)
+  if (q.authorId === user.id) return;
   const existing = await db.query.votes.findFirst({
     where: and(eq(votes.userId, user.id), eq(votes.questionId, questionId)),
   });

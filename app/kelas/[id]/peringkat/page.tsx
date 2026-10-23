@@ -10,7 +10,7 @@ export default async function Leaderboard({ params }: { params: Promise<{ id: st
     <div className="max-w-3xl">
       <h2 className="text-2xl font-bold">Papan peringkat</h2>
       <p className="mt-1 text-graphite">
-        {POINTS.correctAnswer} poin per jawaban benar, {POINTS.questionWritten} poin per soal yang ditulis,
+        {POINTS.correctAnswer} poin per jawaban benar, {POINTS.questionWritten} poin per soal aktif yang ditulis,
         dan {POINTS.upvoteReceived} poin untuk setiap suara naik dari teman.
       </p>
       <ol className="panel mt-6 divide-y divide-line">

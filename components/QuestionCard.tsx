@@ -5,11 +5,13 @@ import { DIFFICULTY_LABEL, LETTERS } from "@/lib/format";
 
 type Q = {
   id: string; prompt: string; options: string[]; correctIndex: number; explanation: string; difficulty: string;
-  authorId: string; authorName: string; score: number; openReports: number; myVote: number | null; myReport: boolean; hidden: boolean;
+  authorId: string; authorName: string; score: number; openReports: number; myVote: number | null; myReport: boolean; answeredByMe: boolean; hidden: boolean;
 };
 
 export function QuestionCard({ q, index, userId, isOwner, editHref }: { q: Q; index: number; userId: string; isOwner: boolean; editHref: string }) {
   const mine = q.authorId === userId;
+  // Kunci dan pembahasan tidak dirender (tidak dikirim ke browser) untuk anggota yang belum mengerjakan soal ini
+  const canSeeKey = mine || isOwner || q.answeredByMe;
   return (
     <article className={`panel flex gap-4 p-4 sm:p-5 ${q.hidden ? "border-dashed bg-paper" : ""}`} aria-labelledby={`q-${q.id}`}>
       {/* Kolom vote */}
@@ -46,13 +48,17 @@ export function QuestionCard({ q, index, userId, isOwner, editHref }: { q: Q; in
           ))}
         </ul>
 
-        <details className="mt-3 group">
-          <summary className="cursor-pointer text-sm font-semibold text-ink underline-offset-4 hover:underline">Lihat kunci dan pembahasan</summary>
-          <div className="mt-2 rounded-lg bg-benar-soft/60 p-3 text-[15px]">
-            <p className="font-semibold text-benar">Jawaban: {LETTERS[q.correctIndex]}. {q.options[q.correctIndex]}</p>
-            <p className="mt-1 whitespace-pre-line text-ink">{q.explanation}</p>
-          </div>
-        </details>
+        {canSeeKey ? (
+          <details className="mt-3 group">
+            <summary className="cursor-pointer text-sm font-semibold text-ink underline-offset-4 hover:underline">Lihat kunci dan pembahasan</summary>
+            <div className="mt-2 rounded-lg bg-benar-soft/60 p-3 text-[15px]">
+              <p className="font-semibold text-benar">Jawaban: {LETTERS[q.correctIndex]}. {q.options[q.correctIndex]}</p>
+              <p className="mt-1 whitespace-pre-line text-ink">{q.explanation}</p>
+            </div>
+          </details>
+        ) : (
+          <p className="mt-3 text-sm text-graphite">Kunci dan pembahasan terbuka setelah kamu mengerjakan soal ini di kuis.</p>
+        )}
 
         <div className="mt-4 flex flex-wrap items-center gap-2">
           {mine && <Link href={editHref} className="btn-ghost btn-sm">Ubah</Link>}
